@@ -1,8 +1,14 @@
 from nicegui import ui
 import requests
 import webbrowser
+import os
+from dotenv import load_dotenv
 
-API_URL = "https://cript-dy96.onrender.com"
+# Cargar variables del archivo .env
+load_dotenv()
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
+
 
 def actualizar_botones(visible: bool):
     copiar_button.visible = visible
