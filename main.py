@@ -1,15 +1,16 @@
-from nicegui import ui
+from nicegui import ui, app  # ⬅️ IMPORTANTE: agregar app
 import requests
 import webbrowser
 import os
 from dotenv import load_dotenv
-from nicegui import ui
-
 
 # Cargar variables del archivo .env
 load_dotenv()
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
+
+# Servir carpeta assets manualmente
+app.add_static_files('/assets', os.path.join(os.path.dirname(__file__), 'assets'))  # ⬅️ ESTA LÍNEA
 
 def actualizar_botones(visible: bool):
     copiar_button.visible = visible
@@ -69,27 +70,63 @@ def compartir_telegram():
         url = f"https://t.me/share/url?url=&text={resultado.text}"
         webbrowser.open(url)
 
-with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow rounded-lg mt-10'):
-    ui.label("Cripter").classes('text-2xl font-bold mb-4 text-center')
+# Fondo de pantalla
+ui.add_head_html("""
+<style>
+    body {
+        background-image: url('/assets/icons/background.jpg'); /* ⬅️ ICONS agregado porque tu imagen está en assets/icons */
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        margin: 0;
+        font-family: 'Arial', sans-serif;
+    }
+</style>
+""")
 
-    ui.label("Mensaje:")
-    mensaje = ui.textarea(placeholder="Escribe tu mensaje...").classes('w-full mb-2')
 
-    ui.label("Clave:")
+# UI
+with ui.column().classes('w-full max-w-md mx-auto p-6 bg-white shadow-xl rounded-lg mt-10 items-center'):  # ⬅️ agregado items-center
+    ui.label("CripterOn").classes('text-3xl font-bold mb-6 text-center text-gray-800')
+
+    ui.label("Mensaje:").classes('self-start')  # ⬅️ para mantener alineación izquierda de etiquetas
+    mensaje = ui.textarea(placeholder="Escribe tu mensaje...").classes('w-full mb-3 resize-none')
+
+    ui.label("Clave:").classes('self-start')  # ⬅️ igual que arriba
     clave = ui.input(placeholder="Clave de cifrado", password=True, password_toggle_button=True).classes('w-full mb-4')
 
-    with ui.row().classes('justify-between w-full'):
-        ui.button("Cifrar", on_click=cifrar).classes('bg-blue-500 text-white px-4 py-2 rounded')
-        ui.button("Descifrar", on_click=descifrar).classes('bg-green-500 text-white px-4 py-2 rounded')
+    with ui.row().classes('w-full gap-2 flex-wrap'):  # ⬅️ agregado flex-wrap para responsividad
+        ui.button("Cifrar", on_click=cifrar).classes('bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex-1')
+        ui.button("Descifrar", on_click=descifrar).classes('bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex-1')
 
-    ui.label("Resultado:").classes('mt-4')
-    resultado = ui.label("").classes('bg-gray-100 p-2 rounded w-full')
+    ui.label("Resultado:").classes('mt-4 text-gray-700')
+    resultado = ui.label("").classes('bg-gray-100 p-3 rounded w-full min-h-[50px]')
 
-    with ui.row().classes('justify-center w-full mt-2'):
+    with ui.row().classes('justify-center w-full mt-3 gap-4'):
         copiar_button = ui.image('assets/icons/list.png').on('click', copiar_resultado).classes('cursor-pointer w-10 h-10')
         whatsapp_button = ui.image('assets/icons/whatsapp.png').on('click', compartir_whatsapp).classes('cursor-pointer w-10 h-10')
         telegram_button = ui.image('assets/icons/telegram.png').on('click', compartir_telegram).classes('cursor-pointer w-10 h-10')
 
         actualizar_botones(False)
 
-app = ui.run_with(app=None)  # Exporta el objeto ASGI para Gunicorn
+        # 🔥 NUEVA SECCIÓN DE COLABORACIÓN
+with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow-xl rounded-lg mt-6 items-center'):
+    ui.label("💖 ¿Quieres colaborar con el creador?").classes('text-md font-semibold text-center mb-2')
+
+    with ui.row().classes('justify-center gap-6 mt-2'):
+        ui.image('assets/icons/bitcoin.png').on('click', lambda: (
+            ui.run_javascript('navigator.clipboard.writeText("")'),
+            ui.notify("📋 Dirección BTC copiada")
+        )).classes('cursor-pointer w-12 h-12')
+
+        ui.image('assets/icons/usdt.png').on('click', lambda: (
+            ui.run_javascript('navigator.clipboard.writeText("")'),
+            ui.notify("📋 Dirección USDT copiada")
+        )).classes('cursor-pointer w-12 h-12')
+
+
+# Solo exporta para Gunicorn si no es ejecución local
+if os.getenv("RENDER") == "true":
+    app = ui.run_with(app=None)  # Render / Gunicorn
+else:
+    ui.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))  # Local
