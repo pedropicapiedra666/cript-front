@@ -1,3 +1,13 @@
-nicegui
-requests
-python-dotenv
+# Servidor y framework
+nicegui==2.21.1
+uvicorn==0.35.0
+gunicorn==23.0.0
+
+# Utilidades
+requests==2.32.4
+python-dotenv==1.1.1
+httpx==0.28.1
+
+# Dependencias recomendadas para estabilidad (opcional pero buenas para Render)
+watchfiles==1.1.0       # Para autoreload en desarrollo (no afecta producción)
+orjson==3.11.1          # JSON rápido
