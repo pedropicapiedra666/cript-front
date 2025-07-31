@@ -3,6 +3,8 @@ import requests
 import webbrowser
 import os
 from dotenv import load_dotenv
+from nicegui import ui
+
 
 # Cargar variables del archivo .env
 load_dotenv()
@@ -89,3 +91,5 @@ with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow rounded-lg
         telegram_button = ui.image('assets/icons/telegram.png').on('click', compartir_telegram).classes('cursor-pointer w-10 h-10')
 
         actualizar_botones(False)
+
+app = ui.run_with(app=None)  # Exporta el objeto ASGI para Gunicorn
