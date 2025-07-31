@@ -1,4 +1,4 @@
-from nicegui import ui, app
+from nicegui import ui
 import requests
 import webbrowser
 import os
@@ -90,5 +90,6 @@ with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow rounded-lg
 
         actualizar_botones(False)
 
-# Exportar app para Vercel
-app = ui.run(native=False, reload=False)
+# Ejecutar NiceGUI (Render detectará este servicio web)
+if __name__ == "__main__":
+    ui.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
