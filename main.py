@@ -2,7 +2,6 @@ from nicegui import ui
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import requests
-import webbrowser
 import os
 from dotenv import load_dotenv
 
@@ -67,13 +66,33 @@ def copiar_resultado():
 
 def compartir_whatsapp():
     if resultado.text:
-        url = f"https://wa.me/?text={resultado.text}"
-        webbrowser.open(url)
+        mensaje_codificado = resultado.text.replace(" ", "%20")
+        js_code = f"""
+        if (navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {{
+            window.location.href = 'whatsapp://send?text={mensaje_codificado}';
+            setTimeout(() => {{
+                window.open('https://wa.me/?text={mensaje_codificado}', '_blank');
+            }}, 500);
+        }} else {{
+            window.open('https://wa.me/?text={mensaje_codificado}', '_blank');
+        }}
+        """
+        ui.run_javascript(js_code)
 
 def compartir_telegram():
     if resultado.text:
-        url = f"https://t.me/share/url?url=&text={resultado.text}"
-        webbrowser.open(url)
+        mensaje_codificado = resultado.text.replace(" ", "%20")
+        js_code = f"""
+        if (navigator.userAgent.match(/Android|iPhone|iPad|iPod/i)) {{
+            window.location.href = 'tg://msg?text={mensaje_codificado}';
+            setTimeout(() => {{
+                window.open('https://t.me/share/url?url=&text={mensaje_codificado}', '_blank');
+            }}, 500);
+        }} else {{
+            window.open('https://t.me/share/url?url=&text={mensaje_codificado}', '_blank');
+        }}
+        """
+        ui.run_javascript(js_code)
 
 # Fondo de pantalla
 ui.add_head_html("""
@@ -129,6 +148,6 @@ with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow-xl rounded
 
 # Solo exporta para Gunicorn si no es ejecución local
 if os.getenv("RENDER") == "true":
-    ui.run_with(app)  # ⬅️ se pasa la instancia de FastAPI
+    ui.run_with(app)
 else:
     ui.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
