@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, app
 import requests
 import webbrowser
 import os
@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
-
 
 def actualizar_botones(visible: bool):
     copiar_button.visible = visible
@@ -91,4 +90,5 @@ with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow rounded-lg
 
         actualizar_botones(False)
 
-ui.run()
+# Exportar app para Vercel
+app = ui.run(native=False, reload=False)
