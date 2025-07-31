@@ -89,7 +89,3 @@ with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow rounded-lg
         telegram_button = ui.image('assets/icons/telegram.png').on('click', compartir_telegram).classes('cursor-pointer w-10 h-10')
 
         actualizar_botones(False)
-
-# Ejecutar NiceGUI (Render detectará este servicio web)
-if __name__ == "__main__":
-    ui.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
