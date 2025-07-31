@@ -1,4 +1,6 @@
-from nicegui import ui, app  # ⬅️ IMPORTANTE: agregar app
+from nicegui import ui
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 import requests
 import webbrowser
 import os
@@ -9,8 +11,11 @@ load_dotenv()
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
 
+# Crear instancia de FastAPI
+app = FastAPI()
+
 # Servir carpeta assets manualmente
-app.add_static_files('/assets', os.path.join(os.path.dirname(__file__), 'assets'))  # ⬅️ ESTA LÍNEA
+app.mount('/assets', StaticFiles(directory=os.path.join(os.path.dirname(__file__), 'assets')), name='assets')
 
 def actualizar_botones(visible: bool):
     copiar_button.visible = visible
@@ -74,7 +79,7 @@ def compartir_telegram():
 ui.add_head_html("""
 <style>
     body {
-        background-image: url('/assets/icons/background.jpg'); /* ⬅️ ICONS agregado porque tu imagen está en assets/icons */
+        background-image: url('/assets/icons/background.jpg');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -84,18 +89,17 @@ ui.add_head_html("""
 </style>
 """)
 
-
 # UI
-with ui.column().classes('w-full max-w-md mx-auto p-6 bg-white shadow-xl rounded-lg mt-10 items-center'):  # ⬅️ agregado items-center
+with ui.column().classes('w-full max-w-md mx-auto p-6 bg-white shadow-xl rounded-lg mt-10 items-center'):
     ui.label("CripterOn").classes('text-3xl font-bold mb-6 text-center text-gray-800')
 
-    ui.label("Mensaje:").classes('self-start')  # ⬅️ para mantener alineación izquierda de etiquetas
+    ui.label("Mensaje:").classes('self-start')
     mensaje = ui.textarea(placeholder="Escribe tu mensaje...").classes('w-full mb-3 resize-none')
 
-    ui.label("Clave:").classes('self-start')  # ⬅️ igual que arriba
+    ui.label("Clave:").classes('self-start')
     clave = ui.input(placeholder="Clave de cifrado", password=True, password_toggle_button=True).classes('w-full mb-4')
 
-    with ui.row().classes('w-full gap-2 flex-wrap'):  # ⬅️ agregado flex-wrap para responsividad
+    with ui.row().classes('w-full gap-2 flex-wrap'):
         ui.button("Cifrar", on_click=cifrar).classes('bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex-1')
         ui.button("Descifrar", on_click=descifrar).classes('bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex-1')
 
@@ -109,24 +113,22 @@ with ui.column().classes('w-full max-w-md mx-auto p-6 bg-white shadow-xl rounded
 
         actualizar_botones(False)
 
-        # 🔥 NUEVA SECCIÓN DE COLABORACIÓN
 with ui.column().classes('w-full max-w-md mx-auto p-4 bg-white shadow-xl rounded-lg mt-6 items-center'):
     ui.label("💖 ¿Quieres colaborar con el creador?").classes('text-md font-semibold text-center mb-2')
 
     with ui.row().classes('justify-center gap-6 mt-2'):
         ui.image('assets/icons/bitcoin.png').on('click', lambda: (
-            ui.run_javascript('navigator.clipboard.writeText("")'),
+            ui.run_javascript('navigator.clipboard.writeText("bc1q2t9n33jyvh0u6yxjlr5cvcg22t920ag9kfgv25")'),
             ui.notify("📋 Dirección BTC copiada")
         )).classes('cursor-pointer w-12 h-12')
 
         ui.image('assets/icons/usdt.png').on('click', lambda: (
-            ui.run_javascript('navigator.clipboard.writeText("")'),
+            ui.run_javascript('navigator.clipboard.writeText("0xB43e1ec91fdb8c0DCB6188D480B58Dc0D14196a0")'),
             ui.notify("📋 Dirección USDT copiada")
         )).classes('cursor-pointer w-12 h-12')
 
-
 # Solo exporta para Gunicorn si no es ejecución local
 if os.getenv("RENDER") == "true":
-    app = ui.run_with(app=None)  # Render / Gunicorn
+    ui.run_with(app)  # ⬅️ se pasa la instancia de FastAPI
 else:
-    ui.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))  # Local
+    ui.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
